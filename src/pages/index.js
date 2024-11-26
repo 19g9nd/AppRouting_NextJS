@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { categories } from '/data'
-export default function Home() {
+import axios from "axios";
+export default function Home({categories}) {
     return (
         <>
             <h1>All Categories:</h1>
@@ -15,4 +15,15 @@ export default function Home() {
             </ul>
         </>
     );
+}
+
+export async function getStaticProps() {
+    const response = await axios.get(`http://localhost:3000/categories`)
+    const categories = response.data;
+    console.log(categories);
+    return {
+        props: {
+            categories
+        },
+    };
 }

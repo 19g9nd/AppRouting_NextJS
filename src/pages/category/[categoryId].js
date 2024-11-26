@@ -1,18 +1,7 @@
+import axios from "axios";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { categories } from "../../../data";
 
-export default function Category() {
-    const router = useRouter();
-    const { categoryId } = router.query;
-
-    if (!router.isReady || !categoryId) {
-        return <div>Loading...</div>;
-    }
-
-    const category = categories.find((cat) => cat.id === categoryId);
-    console.log("category ", category);
-
+export default function Category({ category }) {
     if (!category) {
         return (
             <div>
@@ -25,11 +14,11 @@ export default function Category() {
     return (
         <>
             <h1>Category: {category.name}</h1>
+            <h2>Posts</h2>
             <ul>
-                <h2>Posts</h2>
                 {category.posts.map((post) => (
                     <li key={post.id}>
-                        <Link href={`/category/${categoryId}/post/${post.id}`}>
+                        <Link href={`/category/${category.id}/post/${post.id}`}>
                             {post.title}
                         </Link>
                     </li>
@@ -37,4 +26,31 @@ export default function Category() {
             </ul>
         </>
     );
+}
+
+export async function getStaticPaths() {
+    const response = await axios.get("http://localhost:3000/categories");
+    const categories = response.data;
+
+    const paths = categories.map((category) => ({
+        params: { categoryId: category.id },
+    }));
+
+    return {
+        paths,
+        fallback: false,
+    };
+}
+
+export async function getStaticProps({ params }) {
+    const { categoryId } = params;
+
+    const response = await axios.get(`http://localhost:3000/categories/${categoryId}`);
+    const category = response.data;
+
+    return {
+        props: {
+            category,
+        },
+    };
 }
